@@ -6,14 +6,11 @@ class Search100(Searcheline):
   # initial state to search from
   def init_state(self):
     utils.load_room(self.p8, 7) # load 400m
-    utils.suppress_object(self.p8, self.p8.game.balloon) # don't consider berry block
-    utils.suppress_object(self.p8, self.p8.game.fall_floor)
+    utils.suppress_object(self.p8, self.p8.game.balloon) # don't consider the balloon
+    utils.suppress_object(self.p8, self.p8.game.fall_floor) # don't consider the crumbles
     utils.skip_player_spawn(self.p8) # skip to after player has spawned
-    # execute this list of initial inputs
-    #for a in [18, 2, 2, 2, 2, 2, 2, 2, 2, 2, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]:
-      #self.p8.set_btn_state(a)
-      #self.p8.step()
-    # alternatively, using output from a TAS tool:
+    
+    # using output from a TAS tool:
     utils.place_maddy(self.p8, 9, 112, -.2, 0, 0, 0, 6, 1)
     return self.p8.game.objects
 
@@ -30,27 +27,18 @@ class Search100(Searcheline):
 
   def is_goal(self, objs):
     p = self.find_player(objs)
-    return p and p.y<40 #and p.djump>0 #Be at the height of the final cloud, without going far to the right
+    return p and p.y<40 # be at the lowest height the balloon could reach
 
   # get list of available inputs for a state - only consider {r, r + z, u + r + x}
   def allowable_actions(self, objs, player, h_movement, can_jump, can_dash):
-    actions = [0b000000] # l
+    actions = [0b000000] # n
     if can_jump:
-      actions.extend([0b010000]) # r + z
+      actions.extend([0b010000]) # z
     if can_dash:
-      actions.extend([0b100100]) # u + x, u + l + x
+      actions.extend([0b100100]) # u + x
     return actions
-
-  #def exit_heuristic(self, player, exit_spd_y=3):
-   #   if player.x<10:
-    #    return math.inf
-     # return 0
-
-  #def is_goal(self, objs):
-    #p = self.find_player(objs)
-    #return p and p.y<50 #Be able to walljump on a wall at the right height.
-
+    
 if __name__ == '__main__':
-  # search up to depth 50, but stop at the depth of the first solution found
+  # search up to depth 40, but don't stop at the depth of the first solution found
   s = Search100()
   solutions = s.search(40,complete=True)
